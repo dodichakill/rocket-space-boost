@@ -51,7 +51,7 @@ public class Movement : MonoBehaviour
         mainEngineParticles.Stop();
     }
 
-    private void StartThrusting()
+    public void StartThrusting()
     {
         rb.AddRelativeForce(Vector3.up * thrustStrength * Time.deltaTime);
         if (!audioSource.isPlaying)
@@ -64,16 +64,16 @@ public class Movement : MonoBehaviour
         }
     }
 
-    private void ProcessRotation()
+    public void ProcessRotation()
     {
         float rotationInput = rotation.ReadValue<float>();
         if (rotationInput < 0)
         {
-            RotateRight();
+            RotateRight(isPressed: true);
         }
         else if (rotationInput > 0)
         {
-            RotateLeft();
+            RotateLeft(isPressed: true);
         }
         else
         {
@@ -87,26 +87,39 @@ public class Movement : MonoBehaviour
         leftThrustParticles.Stop();
     }
 
-    private void RotateLeft()
+    public void RotateLeft(bool isPressed)
     {
-        ApplyRotation(-rotationStrength);
-        if (!leftThrustParticles.isPlaying)
+        if (isPressed)
         {
-            rightThrustParticles.Stop();
-            leftThrustParticles.Play();
+            ApplyRotation(-rotationStrength);
+            if (!leftThrustParticles.isPlaying)
+            {
+                rightThrustParticles.Stop();
+                leftThrustParticles.Play();
+            }
+        }
+
+    }
+
+    public void RotateRight(bool isPressed)
+    {
+        if (isPressed)
+        {
+            ApplyRotation(rotationStrength);
+            if (!rightThrustParticles.isPlaying)
+            {
+                leftThrustParticles.Stop();
+                rightThrustParticles.Play();
+            }
         }
     }
 
-    private void RotateRight()
-    {
-        ApplyRotation(rotationStrength);
-        if (!rightThrustParticles.isPlaying)
-        {
-            leftThrustParticles.Stop();
-            rightThrustParticles.Play();
-        }
-    }
-
+    /*************  ✨ Windsurf Command ⭐  *************/
+    /// <summary>
+    /// Applies the rotation to the Rigidbody, avoiding any physics-based rotation.
+    /// </summary>
+    /// <param name="rotationThisFrame">The amount of rotation to apply this frame, in degrees.</param>
+    /*******  baa8a106-1bd5-43c0-824e-9c1cc6c3949a  *******/
     private void ApplyRotation(float rotationThisFrame)
     {
         rb.freezeRotation = true;
