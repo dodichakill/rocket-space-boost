@@ -14,6 +14,11 @@ public class Movement : MonoBehaviour
 
     Rigidbody rb;
     AudioSource audioSource;
+    
+    // Variables to track button press states for mobile
+    private bool isLeftPressed = false;
+    private bool isRightPressed = false;
+    private bool isThrustPressed = false;
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -35,6 +40,14 @@ public class Movement : MonoBehaviour
 
     private void ProcessThrust()
     {
+        // First check if mobile thrust button is pressed
+        if (isThrustPressed)
+        {
+            StartThrusting();
+            return; // Return to avoid conflicts with keyboard input
+        }
+        
+        // Then check keyboard/gamepad input
         if (thrust.IsPressed())
         {
             StartThrusting();
@@ -67,6 +80,20 @@ public class Movement : MonoBehaviour
     public void ProcessRotation()
     {
         float rotationInput = rotation.ReadValue<float>();
+        
+        // First handle mobile button states - these take priority
+        if (isLeftPressed)
+        {
+            RotateLeft(isPressed: true);
+            return; // Return to avoid conflicts with keyboard input
+        }
+        else if (isRightPressed)
+        {
+            RotateRight(isPressed: true);
+            return; // Return to avoid conflicts with keyboard input
+        }
+        
+        // If no mobile buttons are pressed, handle keyboard/gamepad input
         if (rotationInput < 0)
         {
             RotateRight(isPressed: true);
@@ -91,6 +118,7 @@ public class Movement : MonoBehaviour
     {
         if (isPressed)
         {
+            // Apply continuous rotation every frame while pressed
             ApplyRotation(-rotationStrength);
             if (!leftThrustParticles.isPlaying)
             {
@@ -98,13 +126,28 @@ public class Movement : MonoBehaviour
                 leftThrustParticles.Play();
             }
         }
-
+    }
+    
+    // Methods for UI button press events
+    public void OnLeftButtonDown()
+    {
+        isLeftPressed = true;
+    }
+    
+    public void OnLeftButtonUp()
+    {
+        isLeftPressed = false;
+        if (!isRightPressed) // Only stop particles if no other button is pressed
+        {
+            leftThrustParticles.Stop();
+        }
     }
 
     public void RotateRight(bool isPressed)
     {
         if (isPressed)
         {
+            // Apply continuous rotation every frame while pressed
             ApplyRotation(rotationStrength);
             if (!rightThrustParticles.isPlaying)
             {
@@ -112,6 +155,33 @@ public class Movement : MonoBehaviour
                 rightThrustParticles.Play();
             }
         }
+    }
+    
+    // Methods for UI button press events
+    public void OnRightButtonDown()
+    {
+        isRightPressed = true;
+    }
+    
+    public void OnRightButtonUp()
+    {
+        isRightPressed = false;
+        if (!isLeftPressed) // Only stop particles if no other button is pressed
+        {
+            rightThrustParticles.Stop();
+        }
+    }
+    
+    // Methods for Thrust button (B button) press events
+    public void OnThrustButtonDown()
+    {
+        isThrustPressed = true;
+    }
+    
+    public void OnThrustButtonUp()
+    {
+        isThrustPressed = false;
+        StopThrusting();
     }
 
     /*************  ✨ Windsurf Command ⭐  *************/
